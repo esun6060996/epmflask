@@ -116,7 +116,7 @@ class Attach(db.Model):
     #sql = 'select * from student;'
     #stus = db.session.execute(sql)
 
-class School(db.Model):
+class School(PaginatedAPIMixin,db.Model):
     '''
     学校库
     '''
@@ -132,6 +132,20 @@ class School(db.Model):
     label = db.Column(db.String(255))
     # 设置关联用户(User)
     user = db.relationship('User',backref='school')
+
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'fullname': self.fullname,
+            'name': self.name,
+            'label':self.label
+        }
+        return data
+
+    def from_dict(self, data):
+        for field in ['fullname', 'email', 'name','organizationunit_id','label']:
+            if field in data:
+                setattr(self, field, data[field])
 
 class Label(db.Model):
     '''
@@ -392,7 +406,7 @@ class User(PaginatedAPIMixin, db.Model):
         data = {
             'id': self.id,
             'username': self.username,
-            'name': self.name
+            'name': self.name,
         }
         if include_email:
             data['email'] = self.email

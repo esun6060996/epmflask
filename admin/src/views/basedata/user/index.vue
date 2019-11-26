@@ -7,7 +7,9 @@
             ref="d2Crud"
             :columns="columns"
             :data="data"
-            :options="options"/>
+            :options="options"
+            :pagination="pagination"
+            @pagination-current-change="paginationCurrentChange"/>
     </d2-container>
 </template>
 
@@ -18,8 +20,8 @@ export default {
     return {
             columns:[
                 {
-                title: '姓名',
-                key: 'userName',
+                title: '登录名',
+                key: 'username',
                 width: '180'
                 },
                 {
@@ -31,33 +33,63 @@ export default {
                 key: 'phoneNumber'
                 },
                 {
-                title: '微信',
-                key: 'wexin'
+                title: '姓名',
+                key: 'name'
                 },
                 {
                 title: 'QQ',
                 key: 'qq'
                 }
             ],
-            data:{},
+            data:[],
+            loading: false,
             options: {
                 border: true,
                 stripe: true,
-                height: '600'
+                //height: '600'
+            },
+            pagination: {
+                currentPage: 5,
+                pageSize: 10,
+                total: 20
             }
         }
     },
     name: 'user',
+    mounted () {
+        this.fetchData()
+    },
     created() {
         request({
             url: '/users',
             method: 'get'
         }).then(res => {
-            console.log(typeof(res));
-            this.data= res;
-            
-            console.log(this.data);
+            console.log(res);
+            this.data= res.items;
+            this.pagination.currentPage=res._meta.page;
+            this.pagination.pageSize=res._meta.per_page;
+            this.pagination.total=res._meta.total_items;    
         });
+    },
+    methods: {
+        paginationCurrentChange (currentPage) {
+        this.pagination.currentPage = currentPage
+        this.fetchData()
+        },
+        fetchData () {
+        this.loading = true
+        BusinessTable1List({
+            ...this.pagination
+        }).then(res => {
+            this.data = res.list
+            this.pagination.total = res.page.total
+            this.loading = false
+        }).catch(err => {
+            console.log('err', err)
+            this.loading = false
+        })
+        }
     }
+    
 }
 </script>

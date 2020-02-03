@@ -14,37 +14,19 @@ def create_school():
     if not data:
         return bad_request('You must post JSON data.')
 
-    message = {}
-    if 'username' not in data or not data.get('username', None):
-        message['username'] = 'Please provide a valid username.'
-    pattern = '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
-    if 'email' not in data or not re.match(pattern, data.get('email', None)):
-        message['email'] = 'Please provide a valid email address.'
-    if 'password' not in data or not data.get('password', None):
-        message['password'] = 'Please provide a valid password.'
-
-    if User.query.filter_by(username=data.get('username', None)).first():
-        message['username'] = 'Please use a different username.'
-    if User.query.filter_by(email=data.get('email', None)).first():
-        message['email'] = 'Please use a different email address.'
-    if message:
-        return bad_request(message)
-
-    user = User()
-    user.from_dict(data, new_user=True)
-    db.session.add(user)
+    school = School()
+    school.from_dict(data)
+    db.session.add(school)
     db.session.commit()
-    response = jsonify(user.to_dict())
+    response = jsonify(school.to_dict())
     response.status_code = 201
-    # HTTP协议要求201响应包含一个值为新资源URL的Location头部
-    response.headers['Location'] = url_for('api.get_user', id=user.id)
     return response
 
 
 @bp.route('/schools', methods=['GET'])
-@token_auth.login_required
+#@token_auth.login_required
 def get_schools():
-    '''返回用户集合，分页'''
+    '''返回学校集合，分页'''
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
     data = School.to_collection_dict(School.query, page, per_page, 'api.get_schools')
@@ -53,15 +35,15 @@ def get_schools():
 
 @bp.route('/schools/<int:id>', methods=['GET'])
 @token_auth.login_required
-def get_schools(id):
-    '''返回一个用户'''
+def get_school(id):
+    '''返回一所学校'''
     return jsonify(School.query.get_or_404(id).to_dict())
 
 
-@bp.route('/users/<int:id>', methods=['PUT'])
+@bp.route('/schools/<int:id>', methods=['PUT'])
 @token_auth.login_required
 def update_School(id):
-    '''修改一个用户'''
+    '''修改一所学校'''
     school = School.query.get_or_404(id)
     data = request.get_json()
     if not data:
@@ -76,8 +58,8 @@ def update_School(id):
     return jsonify(school.to_dict())
 
 
-@bp.route('/users/<int:id>', methods=['DELETE'])
+@bp.route('/schools/<int:id>', methods=['DELETE'])
 @token_auth.login_required
-def delete_user(id):
-    '''删除一个用户'''
+def delete_school(id):
+    '''删除一所学校'''
     pass

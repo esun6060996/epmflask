@@ -1,5 +1,5 @@
 from app import create_app,db
-from app.models import User,OrganizationUnit,Label
+from app.models import User,OrganizationUnit,Label，School
 
 app = create_app()
 
